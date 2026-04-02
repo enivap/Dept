@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>หนี้เบาใจ - จ่ายหนี้ให้สนุก (เพิ่มหนี้ในรายการได้)</title>
+    <!-- Google Fonts & Font Awesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(145deg, #fef9e8 0%, #fff3e0 100%);
+            font-family: 'Prompt', sans-serif;
+            padding: 1.2rem 1rem 2rem;
+            min-height: 100vh;
+            color: #2d3e50;
+        }
+
+        .sticker-bg {
+            position: fixed;
+            bottom: 10px;
+            right: 5px;
+            font-size: 80px;
+            opacity: 0.1;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .app-container {
+            max-width: 550px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 1.8rem;
+            background: rgba(255,255,245,0.7);
+            border-radius: 2.5rem;
+            padding: 1rem 0.8rem;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.03);
+        }
+
+        .hero h1 {
+            font-size: 1.9rem;
+            font-weight: 800;
+            background: linear-gradient(125deg, #f39c12, #e67e22, #d35400);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .hero h1 i {
+            background: none;
+            color: #e67e22;
+            font-size: 2rem;
+        }
+
+        .quote-bubble {
+            background: #fff6e5;
+            border-radius: 2rem;
+            padding: 0.5rem 1rem;
+            margin-top: 12px;
+            display: inline-block;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #b45f2b;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            max-width: 90%;
+        }
+
+        .quote-bubble i {
+            margin-right: 6px;
+            color: #f1c40f;
+        }
+
+        .card-add {
+            background: white;
+            border-radius: 2rem;
+            padding: 1.2rem;
+            margin-bottom: 1.8rem;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+            border: 1px solid #ffe5bf;
+        }
+
+        .form-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .input-group label {
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: #b45f2b;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .input-group input {
+            background: #fffbf5;
+            border: 1px solid #ffdead;
+            padding: 14px 16px;
+            border-radius: 1.8rem;
+            font-size: 1rem;
+            font-family: 'Prompt', monospace;
+            transition: all 0.2s;
+            outline: none;
+        }
+
+        .input-group input:focus {
+            border-color: #f39c12;
+            box-shadow: 0 0 0 3px rgba(243,156,18,0.2);
+        }
+
+        .btn-primary {
+            background: linear-gradient(95deg, #f39c12, #e67e22);
+            border: none;
+            color: white;
+            padding: 14px 20px;
+            border-radius: 2rem;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 6px 14px rgba(243,156,18,0.3);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.97);
+        }
+
+        /* ปุ่มด่วนเพิ่มหนี้แบบ Quick (ยังคงไว้) */
+        .quick-add-section {
+            display: flex;
+            gap: 12px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        .btn-quick {
+            flex: 1;
+            background: #fef2e0;
+            border: 1px solid #ffd89c;
+            border-radius: 2rem;
+            padding: 10px 0;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #b45f2b;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-quick:active {
+            transform: scale(0.96);
+            background: #ffe6c2;
+        }
+
+        .debt-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        .debt-card {
+            background: white;
+            border-radius: 2rem;
+            padding: 1.2rem;
+            transition: all 0.2s;
+            border: 1px solid #ffefd6;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.05);
+            position: relative;
+        }
+
+        .debt-card.cleared-card {
+            background: #eaf7e6;
+            border-left: 8px solid #2ecc71;
+            opacity: 0.9;
+        }
+
+        .debt-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .debt-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #c0392b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            word-break: break-word;
+        }
+
+        .sticker-sm {
+            font-size: 1.4rem;
+        }
+
+        .badge-status {
+            background: #fdebd0;
+            border-radius: 50px;
+            padding: 4px 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #d35400;
+        }
+
+        .badge-cleared {
+            background: #d5f5e3;
+            color: #1e8449;
+        }
+
+        .amount-panel {
+            background: #fff7ef;
+            border-radius: 1.5rem;
+            padding: 0.8rem;
+            text-align: center;
+            margin: 12px 0;
+        }
+
+        .remaining-label {
+            font-size: 0.7rem;
+            letter-spacing: 1px;
+            color: #a5693a;
+        }
+
+        .remaining-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #e67e22;
+            line-height: 1;
+        }
+
+        .progress-bar-bg {
+            background: #ffe0b5;
+            border-radius: 30px;
+            height: 10px;
+            margin: 8px 0 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: #f39c12;
+            width: 0%;
+            height: 10px;
+            border-radius: 30px;
+            transition: width 0.3s;
+        }
+
+        .payment-section {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0 10px;
+        }
+
+        .payment-input {
+            flex: 2;
+            border: 1px solid #ffd7a5;
+            border-radius: 2rem;
+            padding: 12px 14px;
+            font-size: 1rem;
+            font-family: 'Prompt', monospace;
+            background: #fffaf2;
+        }
+
+        .btn-pay {
+            background: #27ae60;
+            border: none;
+            color: white;
+            border-radius: 2rem;
+            padding: 0 20px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.1s;
+            font-size: 0.9rem;
+        }
+
+        .btn-pay:active {
+            transform: scale(0.96);
+            background: #2ecc71;
+        }
+
+        /* ปุ่มเพิ่มหนี้ (ในรายการ) */
+        .btn-add-debt {
+            background: #e67e22;
+            border: none;
+            color: white;
+            border-radius: 2rem;
+            padding: 8px 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.1s;
+            font-size: 0.8rem;
+            margin-top: 4px;
+        }
+        .btn-add-debt:active {
+            transform: scale(0.96);
+            background: #d35400;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 6px;
+        }
+        .btn-delete {
+            background: transparent;
+            border: 1px solid #f5c6a5;
+            color: #c0392b;
+            padding: 8px 12px;
+            border-radius: 2rem;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.75rem;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .btn-add-debt-small {
+            flex: 1;
+            background: #f39c12;
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 2rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 0.75rem;
+        }
+
+        .history-log {
+            background: #fef5e8;
+            border-radius: 1.2rem;
+            padding: 8px 10px;
+            margin-top: 12px;
+            font-size: 0.65rem;
+            max-height: 110px;
+            overflow-y: auto;
+        }
+
+        .motivation-tag {
+            display: inline-block;
+            background: #ffedd5;
+            border-radius: 30px;
+            padding: 4px 12px;
+            font-size: 0.7rem;
+            margin-top: 8px;
+            color: #b45f2b;
+            text-align: center;
+        }
+
+        .empty-state {
+            text-align: center;
+            background: #fff8ef;
+            border-radius: 2rem;
+            padding: 2.5rem;
+            color: #b97745;
+        }
+
+        /* POPUP MODAL */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-container {
+            background: white;
+            max-width: 320px;
+            width: 85%;
+            border-radius: 2rem;
+            padding: 1.5rem 1.2rem;
+            text-align: center;
+            box-shadow: 0 25px 45px rgba(0,0,0,0.2);
+            transform: scale(0.9);
+            transition: transform 0.2s cubic-bezier(0.34, 1.2, 0.64, 1);
+            border: 1px solid #ffe3b5;
+        }
+        .modal-overlay.active .modal-container {
+            transform: scale(1);
+        }
+        .modal-emoji {
+            font-size: 3.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .modal-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #c0392b;
+        }
+        .modal-message {
+            font-size: 1rem;
+            color: #5a3e2b;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+        .modal-btn {
+            background: linear-gradient(95deg, #f39c12, #e67e22);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 3rem;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            transition: 0.1s;
+        }
+        .modal-btn:active {
+            transform: scale(0.97);
+        }
+        .modal-input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 2rem;
+            border: 1px solid #ffdead;
+            margin: 12px 0;
+            font-size: 1rem;
+            font-family: 'Prompt', sans-serif;
+            text-align: center;
+        }
+
+        .toast-message {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2c3e50;
+            color: #ffefcf;
+            padding: 12px 20px;
+            border-radius: 60px;
+            font-size: 0.8rem;
+            z-index: 1100;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+            font-weight: 500;
+            white-space: normal;
+            text-align: center;
+            max-width: 90%;
+        }
+        @keyframes bounce {
+            0%,100%{ transform: translateY(0); }
+            50%{ transform: translateY(-5px); }
+        }
+        .sticker-emoji {
+            animation: bounce 1s ease infinite;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+<div class="sticker-bg">🧸✨🍚🐢💪💰</div>
+<div class="app-container">
+    <div class="hero">
+        <h1>
+            <i class="fas fa-hand-peace"></i> หนี้เบาใจ
+            <span class="sticker-emoji">🕊️</span>
+        </h1>
+        <div class="quote-bubble" id="randomQuote">
+            <i class="fas fa-heart"></i> <span>กำลังโหลดคำคม...</span>
+        </div>
+    </div>
+
+    <div class="card-add">
+        <div class="form-grid">
+            <div class="input-group">
+                <label><i class="fas fa-pen-fancy"></i> ชื่อหนี้ / เจ้าหนี้</label>
+                <input type="text" id="debtNameInput" placeholder="เช่น ค่าข้าว, ค่าห้อง, ยืมเพื่อน" autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label><i class="fas fa-coins"></i> ยอดหนี้ทั้งหมด (บาท)</label>
+                <input type="number" id="debtAmountInput" placeholder="จำนวนเงิน" step="any" min="0">
+            </div>
+            <button id="addDebtBtn" class="btn-primary"><i class="fas fa-plus-circle"></i> + เพิ่มหนี้ใหม่</button>
+            
+            <div class="quick-add-section">
+                <button id="quickRiceBtn" class="btn-quick"><i class="fas fa-utensils"></i> ค่าข้าว 60฿</button>
+                <button id="QuickSnackBtn" class="btn-quick"><i class="fas fa-coffee"></i> ขนม/กาแฟ 35฿</button>
+                <button id="quickTravelBtn" class="btn-quick"><i class="fas fa-bus"></i> ค่าเดินทาง 50฿</button>
+            </div>
+            <div style="font-size:0.65rem; text-align:center; margin-top:4px; color:#b87333;">
+                <i class="fas fa-mouse-pointer"></i> กดปุ่มด่วนเพิ่มหนี้ใหม่ หรือกด <strong>"➕ เพิ่มหนี้"</strong> ในรายการเพื่อเพิ่มยอด
+            </div>
+        </div>
+    </div>
+
+    <div id="debtListContainer" class="debt-grid"></div>
+    <div style="text-align: center; margin-top: 1.5rem; font-size: 0.7rem; opacity: 0.7;">
+        🌈 จ่ายเท่าไหร่ก็ใกล้เป้าหมายมากขึ้น 💪
+    </div>
+</div>
+
+<!-- Popup Modal สำหรับเพิ่มหนี้ในรายการ และอื่นๆ -->
+<div id="customModal" class="modal-overlay">
+    <div class="modal-container">
+        <div class="modal-emoji" id="modalEmoji">🧸</div>
+        <div class="modal-title" id="modalTitle">แจ้งเตือน</div>
+        <div class="modal-message" id="modalMessage">ข้อความ</div>
+        <input type="number" id="modalInputAmount" class="modal-input" placeholder="จำนวนเงิน (บาท)" step="any" min="0" style="display: none;">
+        <button id="modalConfirmBtn" class="modal-btn">ตกลง</button>
+    </div>
+</div>
+
+<script>
+    // ---------- Popup system (รองรับ input) ----------
+    let pendingCallback = null;
+    function showPopupWithInput(emoji, title, message, placeholder, callback) {
+        const modal = document.getElementById('customModal');
+        const modalEmoji = document.getElementById('modalEmoji');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalInput = document.getElementById('modalInputAmount');
+        const confirmBtn = document.getElementById('modalConfirmBtn');
+        
+        modalEmoji.innerText = emoji;
+        modalTitle.innerText = title;
+        modalMessage.innerText = message;
+        modalInput.style.display = 'block';
+        modalInput.placeholder = placeholder;
+        modalInput.value = '';
+        
+        const handleConfirm = () => {
+            const val = modalInput.value;
+            modal.classList.remove('active');
+            modalInput.style.display = 'none';
+            confirmBtn.removeEventListener('click', handleConfirm);
+            if(callback && typeof callback === 'function') callback(val);
+        };
+        confirmBtn.addEventListener('click', handleConfirm);
+        modal.classList.add('active');
+        modalInput.focus();
+    }
+
+    function showPopup(emoji, title, message, onConfirm = null) {
+        const modal = document.getElementById('customModal');
+        const modalEmoji = document.getElementById('modalEmoji');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalInput = document.getElementById('modalInputAmount');
+        const confirmBtn = document.getElementById('modalConfirmBtn');
+        
+        modalEmoji.innerText = emoji;
+        modalTitle.innerText = title;
+        modalMessage.innerText = message;
+        modalInput.style.display = 'none';
+        
+        const handleConfirm = () => {
+            modal.classList.remove('active');
+            confirmBtn.removeEventListener('click', handleConfirm);
+            if(onConfirm && typeof onConfirm === 'function') onConfirm();
+        };
+        confirmBtn.addEventListener('click', handleConfirm);
+        modal.classList.add('active');
+    }
+    
+    function showAlertPopup(message, emoji = '📢') {
+        showPopup(emoji, 'แจ้งเตือน', message);
+    }
+
+    // ---------- ข้อมูลและ quotes ----------
+    let debts = [];
+    
+    const quotes = [
+        "💪 จ่ายวันละนิด หนี้ก็หมดไว!", 
+        "🌸 อีกนิดเดียว... ใกล้ freedom!",
+        "🍀 อย่ากดดัน จ่ายตามกำลัง แล้วหนี้จะลดลงเอง",
+        "🌟 วันนี้จ่ายเพิ่ม ความเครียดลดลง",
+        "🐢 ช้าแต่มั่นคง หนี้หมดแน่นอน",
+        "🧸 คุณทำได้! ทุกบาทที่จ่ายคือความภูมิใจ",
+        "✨ ยิ่งจ่ายยิ่งเห็นแสงสว่างทางการเงิน",
+        "🎉 ชำระหนี้แล้ว ฉลองเบาๆ ด้วยรอยยิ้ม",
+        "💖 ไม่ต้องรีบ แต่ขอให้จ่ายสม่ำเสมอ",
+        "🏆 หนี้ลดทุกวัน = พลังบวกเพิ่มทุกวัน"
+    ];
+
+    function getRandomQuote() {
+        return quotes[Math.floor(Math.random() * quotes.length)];
+    }
+
+    function updateQuoteDisplay() {
+        const quoteSpan = document.querySelector('#randomQuote span');
+        if(quoteSpan) quoteSpan.innerText = getRandomQuote();
+    }
+    setInterval(updateQuoteDisplay, 8000);
+
+    function saveToLocal() {
+        localStorage.setItem('debt_motivate_tracker', JSON.stringify(debts));
+    }
+
+    function loadData() {
+        const stored = localStorage.getItem('debt_motivate_tracker');
+        if(stored) {
+            debts = JSON.parse(stored);
+            debts.forEach(d => {
+                d.remaining = typeof d.remaining === 'number' ? d.remaining : d.totalAmount;
+                if(!d.history) d.history = [];
+            });
+        } else {
+            debts = [
+                { id: 'ex1', name: 'ยืมเพื่อน', totalAmount: 500, remaining: 500, history: [] },
+                { id: 'ex2', name: 'ค่าห้องค้าง', totalAmount: 3200, remaining: 3200, history: [] },
+                { id: 'ex3', name: 'ค่าข้าวร้านประจำ', totalAmount: 180, remaining: 180, history: [] }
+            ];
+            saveToLocal();
+        }
+        renderDebts();
+    }
+
+    function showMotivationToast(amountPaid, remainingNow, debtName = '', isIncrease = false) {
+        const toastDiv = document.createElement('div');
+        toastDiv.className = 'toast-message';
+        let msg = '';
+        if(isIncrease) {
+            msg = `📈 เพิ่มหนี้ " ${debtName} " อีก ${amountPaid} บาท! ยอดรวมเพิ่มขึ้น ยังไงก็สู้ๆ นะ 💪`;
+        } else if(remainingNow === 0) {
+            msg = `🎉✨ เย้! ปิดหนี้ "${debtName}" สำเร็จ!! คุณยอดเยี่ยมมาก ✨🎉`;
+        } else {
+            const randomEmoji = ['💸✅', '🍀💪', '🐣💰', '🌟📉', '💖🔻'][Math.floor(Math.random()*5)];
+            msg = `${randomEmoji} จ่ายไป ${amountPaid.toFixed(2)} บาท! เหลือ ${remainingNow.toFixed(2)} บาท  ${getRandomQuote()}`;
+        }
+        toastDiv.innerHTML = `<i class="fas fa-face-smile"></i> ${msg}`;
+        document.body.appendChild(toastDiv);
+        setTimeout(() => {
+            toastDiv.style.opacity = '0';
+            setTimeout(() => toastDiv.remove(), 500);
+        }, 3000);
+    }
+
+    // ฟังก์ชันเพิ่มหนี้หลัก (สร้างใหม่)
+    function addDebtCore(name, amount, showSuccessToast = true) {
+        if(!name || name.trim() === '') {
+            showAlertPopup('กรุณากรอกชื่อหนี้', '📝');
+            return false;
+        }
+        if(isNaN(amount) || amount <= 0) {
+            showAlertPopup('ยอดหนี้ต้องมากกว่า 0 บาท', '💰');
+            return false;
+        }
+        const newDebt = {
+            id: Date.now() + '-' + Math.random().toString(36).substr(2,6),
+            name: name.trim(),
+            totalAmount: amount,
+            remaining: amount,
+            history: []
+        };
+        debts.unshift(newDebt);
+        saveToLocal();
+        renderDebts();
+        if(showSuccessToast) {
+            const addToast = document.createElement('div');
+            addToast.className = 'toast-message';
+            addToast.innerHTML = `📝 เพิ่มหนี้ใหม่ "${name}" จำนวน ${amount} บาท เรียบร้อย!`;
+            document.body.appendChild(addToast);
+            setTimeout(() => addToast.remove(), 2000);
+        }
+        return true;
+    }
+
+    // ★★★ ฟังก์ชันเพิ่มหนี้เข้าไปในรายการเดิม ★★★
+    function increaseDebtAmount(debtId) {
+        const debt = debts.find(d => d.id === debtId);
+        if(!debt) return;
+        showPopupWithInput('➕', 'เพิ่มหนี้', `เพิ่มยอดหนี้ของ "${debt.name}"`, 'จำนวนเงินที่ต้องการเพิ่ม (บาท)', (inputVal) => {
+            let addAmount = parseFloat(inputVal);
+            if(isNaN(addAmount) || addAmount <= 0) {
+                showAlertPopup('กรุณากรอกจำนวนเงินที่เพิ่มมากกว่า 0 บาท', '⚠️');
+                return;
+            }
+            // เพิ่มทั้ง totalAmount และ remaining
+            debt.totalAmount += addAmount;
+            debt.remaining += addAmount;
+            // บันทึกประวัติการเพิ่มหนี้
+            const record = {
+                date: new Date().toLocaleString('th-TH'),
+                amount: addAmount,
+                remainingAfter: debt.remaining,
+                note: `เพิ่มหนี้ +${addAmount} บาท`
+            };
+            if(!debt.history) debt.history = [];
+            debt.history.unshift(record);
+            saveToLocal();
+            renderDebts();
+            showMotivationToast(addAmount, debt.remaining, debt.name, true);
+        });
+    }
+
+    function addNewDebt() {
+        const nameInput = document.getElementById('debtNameInput');
+        const amountInput = document.getElementById('debtAmountInput');
+        let name = nameInput.value.trim();
+        let amount = parseFloat(amountInput.value);
+        if(!name) {
+            showAlertPopup('กรุณากรอกชื่อหนี้หรือเจ้าหนี้ 🧸', '📝');
+            return;
+        }
+        if(isNaN(amount) || amount <= 0) {
+            showAlertPopup('กรุณากรอกยอดหนี้เป็นตัวเลขมากกว่า 0 บาท', '💰');
+            return;
+        }
+        if(addDebtCore(name, amount, true)) {
+            nameInput.value = '';
+            amountInput.value = '';
+            nameInput.focus();
+        }
+    }
+
+    function quickAddDebt(debtName, amount) {
+        addDebtCore(debtName, amount, true);
+    }
+
+    function payDebt(debtId, rawAmount) {
+        const debt = debts.find(d => d.id === debtId);
+        if(!debt) return;
+        let payAmount = parseFloat(rawAmount);
+        if(isNaN(payAmount) || payAmount <= 0) {
+            showAlertPopup('กรุณากรอกจำนวนเงินที่จะจ่ายให้ถูกต้อง (มากกว่า 0)', '💸');
+            return;
+        }
+        if(payAmount > debt.remaining) {
+            showAlertPopup(`ยอดคงเหลือแค่ ${debt.remaining.toFixed(2)} บาท กรุณาจ่ายไม่เกินนี้ 💖`, '⚠️');
+            return;
+        }
+        debt.remaining = parseFloat((debt.remaining - payAmount).toFixed(2));
+        const record = {
+            date: new Date().toLocaleString('th-TH'),
+            amount: payAmount,
+            remainingAfter: debt.remaining,
+            emoji: '✅'
+        };
+        if(!debt.history) debt.history = [];
+        debt.history.unshift(record);
+        
+        saveToLocal();
+        renderDebts();
+        showMotivationToast(payAmount, debt.remaining, debt.name, false);
+        if(debt.remaining === 0) {
+            const confettiToast = document.createElement('div');
+            confettiToast.className = 'toast-message';
+            confettiToast.style.background = '#2ecc71';
+            confettiToast.style.color = '#1e3a2f';
+            confettiToast.innerHTML = `🎊🎉 ปิดหนี้ "${debt.name}" แล้ว! สุดยอดมาก! 🎉🎊 <i class="fas fa-star"></i>`;
+            document.body.appendChild(confettiToast);
+            setTimeout(() => confettiToast.remove(), 3500);
+            showPopup('🏆✨', 'ปิดหนี้สำเร็จ!', `คุณปิดหนี้ "${debt.name}" ได้เรียบร้อยแล้ว! เยี่ยมมากกก 💪`);
+        }
+    }
+
+    function deleteDebt(debtId) {
+        const debtToDelete = debts.find(d => d.id === debtId);
+        if(!debtToDelete) return;
+        showPopup('🗑️', 'ยืนยันการลบ', `คุณต้องการลบหนี้ "${debtToDelete.name}" ใช่หรือไม่?`, () => {
+            debts = debts.filter(d => d.id !== debtId);
+            saveToLocal();
+            renderDebts();
+            const delToast = document.createElement('div');
+            delToast.className = 'toast-message';
+            delToast.innerHTML = `🗑️ ลบหนี้ "${debtToDelete.name}" เรียบร้อย`;
+            document.body.appendChild(delToast);
+            setTimeout(() => delToast.remove(), 1800);
+        });
+    }
+
+    function getStickerByRemaining(remaining, total) {
+        if(remaining === 0) return '🏆🎉✨';
+        const percent = (total - remaining)/total;
+        if(percent >= 0.7) return '💪🔥🐢';
+        if(percent >= 0.3) return '🌸🍀📉';
+        return '🌱⏳💸';
+    }
+
+    function renderDebts() {
+        const container = document.getElementById('debtListContainer');
+        if(!container) return;
+        if(debts.length === 0) {
+            container.innerHTML = `<div class="empty-state">
+                <i class="fas fa-cloud-sun" style="font-size: 3rem;"></i>
+                <h3>ยังไม่มีหนี้เลย ✨</h3>
+                <p>เพิ่มหนี้ด้านบน หรือกดปุ่มด่วนค่าข้าวก็ได้นะ</p>
+                <div style="margin-top:12px;">🍚🍜🍔</div>
+            </div>`;
+            return;
+        }
+        let html = '';
+        for(let debt of debts) {
+            const remaining = debt.remaining;
+            const total = debt.totalAmount;
+            const paidAmount = total - remaining;
+            const percentPaid = total > 0 ? (paidAmount/total)*100 : 0;
+            const isCleared = remaining <= 0;
+            const sticker = getStickerByRemaining(remaining, total);
+            const cardClass = isCleared ? 'debt-card cleared-card' : 'debt-card';
+            let historyHtml = `<div class="history-log"><i class="fas fa-clock"></i> 📜 ประวัติการจ่าย/เพิ่ม<br>`;
+            if(!debt.history || debt.history.length === 0) {
+                historyHtml += `<span>✨ ยังไม่มีประวัติ กดจ่ายหรือเพิ่มหนี้ ✨</span>`;
+            } else {
+                debt.history.slice(0, 5).forEach(h => {
+                    const isIncrease = h.note && h.note.includes('เพิ่ม');
+                    const icon = isIncrease ? '➕' : '💸';
+                    historyHtml += `<span>${icon} ${h.date} : ${h.note || `จ่าย ${h.amount.toFixed(2)} บาท`} (เหลือ ${h.remainingAfter.toFixed(2)})</span>`;
+                });
+                if(debt.history.length > 5) historyHtml += `<span>⋯ และอีก ${debt.history.length-5} รายการ</span>`;
+            }
+            historyHtml += `</div>`;
+            const randomMiniQuote = quotes[Math.floor(Math.random() * quotes.length)];
+            
+            html += `
+                <div class="${cardClass}" data-id="${debt.id}">
+                    <div class="debt-header">
+                        <div class="debt-name">
+                            <span class="sticker-sm">${isCleared ? '✅' : '📌'}</span> 
+                            ${escapeHtml(debt.name)}
+                        </div>
+                        <div class="badge-status ${isCleared ? 'badge-cleared' : ''}">
+                            ${isCleared ? 'ชำระแล้ว 🎉' : 'กำลังชำระ'}
+                        </div>
+                    </div>
+                    <div class="amount-panel">
+                        <div class="remaining-label">คงเหลือ</div>
+                        <div class="remaining-value">
+                            ${remaining.toFixed(2)} <span style="font-size:1rem;">บาท</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-fill" style="width: ${percentPaid}%;"></div>
+                        </div>
+                        <div style="font-size:0.7rem;">ยอดรวมทั้งหมด ${total.toFixed(2)} บาท (จ่ายแล้ว ${paidAmount.toFixed(2)})</div>
+                        <div class="motivation-tag"><i class="fas fa-smile-wink"></i> ${randomMiniQuote}</div>
+                        <div style="font-size: 1.2rem; margin-top: 4px;">${sticker}</div>
+                    </div>
+                    ${!isCleared ? `
+                    <div class="payment-section">
+                        <input type="number" id="pay-input-${debt.id}" class="payment-input" placeholder="จำนวนที่จ่าย" step="any" min="0">
+                        <button class="btn-pay" data-id="${debt.id}" data-action="pay"><i class="fas fa-hand-holding-heart"></i> จ่าย</button>
+                    </div>
+                    ` : `
+                    <div style="background:#d5f5e3; border-radius:1.5rem; padding:8px; text-align:center; margin:8px 0; font-weight:bold;">
+                        <i class="fas fa-check-circle"></i> ปิดหนี้สำเร็จ! 🎊
+                    </div>
+                    `}
+                    <div class="action-buttons">
+                        <button class="btn-add-debt-small" data-id="${debt.id}" data-action="increase"><i class="fas fa-plus-circle"></i> เพิ่มหนี้</button>
+                        <button class="btn-delete" data-id="${debt.id}" data-action="delete"><i class="fas fa-trash-can"></i> ลบ</button>
+                    </div>
+                    ${historyHtml}
+                </div>
+            `;
+        }
+        container.innerHTML = html;
+        // attach events
+        document.querySelectorAll('.btn-pay').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const debtId = btn.getAttribute('data-id');
+                const inputElem = document.getElementById(`pay-input-${debtId}`);
+                let val = inputElem ? inputElem.value : '';
+                if(!val || val === '') {
+                    showAlertPopup('กรุณาใส่จำนวนเงินที่จะจ่าย (บาท)', '💵');
+                    return;
+                }
+                payDebt(debtId, val);
+                if(inputElem) inputElem.value = '';
+            });
+        });
+        document.querySelectorAll('.btn-delete').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const debtId = btn.getAttribute('data-id');
+                deleteDebt(debtId);
+            });
+        });
+        document.querySelectorAll('.btn-add-debt-small').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const debtId = btn.getAttribute('data-id');
+                increaseDebtAmount(debtId);
+            });
+        });
+    }
+
+    function escapeHtml(str) {
+        if(!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if(m === '&') return '&amp;';
+            if(m === '<') return '&lt;';
+            if(m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadData();
+        updateQuoteDisplay();
+        const addBtn = document.getElementById('addDebtBtn');
+        addBtn.addEventListener('click', addNewDebt);
+        const nameInput = document.getElementById('debtNameInput');
+        const amountInput = document.getElementById('debtAmountInput');
+        nameInput.addEventListener('keypress', e => { if(e.key === 'Enter') addNewDebt(); });
+        amountInput.addEventListener('keypress', e => { if(e.key === 'Enter') addNewDebt(); });
+        
+        document.getElementById('quickRiceBtn').addEventListener('click', () => quickAddDebt('ค่าข้าวร้านประจำ', 60));
+        document.getElementById('QuickSnackBtn').addEventListener('click', () => quickAddDebt('ขนม/กาแฟระหว่างวัน', 35));
+        document.getElementById('quickTravelBtn').addEventListener('click', () => quickAddDebt('ค่าเดินทาง-รถไฟฟ้า', 50));
+    });
+</script>
+</body>
+</html>
